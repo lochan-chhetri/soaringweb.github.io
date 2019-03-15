@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>My Next Bus</title>
+
+    <style>
+        .header {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        table {
+            width: 300px;
+            margin: 20px auto;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #EEE;
+        }
+
+        td {
+            padding: 15px;
+            width: 25px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+
+    <script type="text/javascript">
+
+        const data = [
+            {'time': '15:00', 'bus': ['O', ''], next: false},
+            {'time': '15:30', 'bus': ['O', ''], next: false},
+            {'time': '16:05', 'bus': ['', 'W'], next: false},
+            {'time': '16:10', 'bus': ['O', ''], next: false},
+            {'time': '16:20', 'bus': ['O', ''], next: false},
+            {'time': '16:25', 'bus': ['', 'W'], next: false},
+            {'time': '16:40', 'bus': ['O', ''], next: false},
+            {'time': '16:45', 'bus': ['', 'W'], next: false},
+            {'time': '16:50', 'bus': ['O', ''], next: false},
+            {'time': '17:00', 'bus': ['O', ''], next: false},
+            {'time': '17:05', 'bus': ['', 'W'], next: false},
+            {'time': '17:10', 'bus': ['O', ''], next: false},
+            {'time': '17:20', 'bus': ['O', ''], next: false},
+            {'time': '17:25', 'bus': ['', 'W'], next: false},
+            {'time': '17:30', 'bus': ['O', ''], next: false},
+            {'time': '17:40', 'bus': ['O', ''], next: false},
+            {'time': '17:45', 'bus': ['', 'W'], next: false},
+            {'time': '17:50', 'bus': ['O', ''], next: false},
+            {'time': '18:00', 'bus': ['O', ''], next: false},
+            {'time': '18:10', 'bus': ['O', 'W'], next: false},
+            {'time': '18:20', 'bus': ['O', ''], next: false},
+            {'time': '18:25', 'bus': ['', 'W'], next: false},
+            {'time': '18:30', 'bus': ['O', ''], next: false},
+            {'time': '18:40', 'bus': ['O', ''], next: false},
+            {'time': '18:45', 'bus': ['', 'W'], next: false},
+            {'time': '18:50', 'bus': ['O', ''], next: false},
+            {'time': '19:00', 'bus': ['O', ''], next: false},
+            {'time': '19:05', 'bus': ['', 'W'], next: false},
+            {'time': '19:30', 'bus': ['O', ''], next: false},
+            {'time': '19:55', 'bus': ['', 'W'], next: false},
+            {'time': '20:00', 'bus': ['O', ''], next: false},
+            {'time': '21:00', 'bus': ['O', ''], next: false},
+            {'time': '22:00', 'bus': ['O', ''], next: false},
+        ];
+
+        const root = document.getElementById('root');
+
+        const date = new Date();
+        const current = `${date.getHours()}:${date.getMinutes()}`;
+
+        const header = document.createElement('h1');
+        header.classList.add("header");
+        header.innerHTML = `Time: ${current}`;
+        root.appendChild(header);
+
+        const bus = data.find(item => {
+            return item.time > current;
+        });
+
+        if (bus) bus.next = true;
+
+        const table = document.createElement('table');
+        root.appendChild(table);
+
+        data.forEach((item, i) => {
+            var row = table.insertRow(i);
+            row.insertCell(0).innerHTML = item.time;
+            row.insertCell(1).innerHTML = item.bus[0];
+            row.insertCell(2).innerHTML = item.bus[1];
+            if (item.next) {
+                row.style.backgroundColor = '#666';
+                row.style.color = '#fff';
+                row.style.fontWeight = 'bold';
+            }
+
+        });
+    </script>
+
+
+</body>
+
+</html>
