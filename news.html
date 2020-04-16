@@ -11,30 +11,31 @@
                 font-family: Arial, Helvetica, sans-serif;
                 font-size: 16px;
                 line-height: 1.3em;
+                margin: 0;
             }
 
             #notification {
-                margin: 5px;
-                border: 2px solid rgb(189, 189, 1);
+                border: 2px solid #1e5a2e;
                 background-color: yellow;
-                padding: 1px 10px;
-                color: #333;
+                padding: 1px 5px;
+                color: #1e5a2e;
                 font-weight: bold;
                 display: none;
                 text-align: center;
+                font-size: 13px;
             }
 
             #searchForm {
                 display: flex;
                 justify-content: center;
-                margin: 5px;
                 border: 1px solid #efefef;
                 padding: 10px;
                 background-color: #2c9848;
+                flex-wrap: wrap;
             }
             
             #searchForm > * {
-                margin: 0 5px;
+                margin: 2px 5px;
                 height: 25px;
                 box-sizing: border-box;
             }
@@ -69,6 +70,15 @@
                 }
             }
 
+            @media (max-width: 660px) {
+                #searchForm {
+                    justify-content: left;
+                }
+                #searchForm > input, #searchForm > button {
+                   
+                }
+            }
+
             @media (min-width: 501px) {
                 #newsContainer {
                     grid-template-columns: 1fr 1fr;
@@ -95,9 +105,9 @@
 
             .item {
                 background-color: #fefefe;
-                border: 1px solid #efefef;
+                border-bottom: 1px solid #CCC;
                 margin: 5px;
-                padding: 10px;
+                padding: 5px;
             }
 
             .title {
@@ -108,7 +118,7 @@
 
             .photo {
                 width: 100%;
-                margin: 10px 0;
+                margin: 5px 0;
             }
 
             .publish, .author, .link {
@@ -149,7 +159,7 @@
             </select>
             <input type="text" name="searchBox" id="searchBox" placeholder="Search" />
             <button>Submit</button>
-            <div id="notification">Cached News</div>
+            <span id="notification">Cached News</span>
         </form>
 
         <div id="newsContainer"></div>
@@ -168,8 +178,8 @@
                 let cachedData = validateCache(category, country, keyword.toLowerCase() );
 
                 if(cachedData && cachedData.articles.length > 0) {
-                    notification.innerText = 'Cached Articles';
-                    notification.style.display = 'block';
+                    notification.innerText = 'Cached';
+                    notification.style.display = 'inline';
                     populate(cachedData.articles);
                 } else {
                     fetch(`https://newsapi.org/v2/top-headlines?category=${category}&country=${country}&q=${keyword}&apiKey=881b2a671df14037b6a79a56e42d096d`)
@@ -178,8 +188,8 @@
                         if (data.articles.length) {
                             notification.style.display = 'none';
                         } else {
-                            notification.innerText = 'Articles not found';
-                            notification.style.display = 'block';
+                            notification.innerText = 'No Result';
+                            notification.style.display = 'inline';
                         }
                         populate(data.articles);
                         setCache(category, country, keyword.toLowerCase(), data);
