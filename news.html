@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>News</title>
+
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 16px;
+                line-height: 1.3em;
+            }
+
+            #notification {
+                margin: 5px;
+                border: 2px solid rgb(189, 189, 1);
+                background-color: yellow;
+                padding: 1px 10px;
+                color: #333;
+                font-weight: bold;
+                display: none;
+                text-align: center;
+            }
+
+            #searchForm {
+                display: flex;
+                justify-content: center;
+                margin: 5px;
+                border: 1px solid #efefef;
+                padding: 10px;
+                background-color: #2c9848;
+            }
+            
+            #searchForm > * {
+                margin: 0 5px;
+                height: 25px;
+                box-sizing: border-box;
+            }
+
+            select, input[type=text] {
+                border: 1px solid #1e5a2e;
+                background-color: #f2f2f2;
+                color: #666;
+            }
+
+            input[type=text] {
+                padding: 0 5px;
+            }
+
+            button {
+                background-color: #2c9848;
+                border: 1px solid #1e5a2e;
+                color: #fff;
+                font-weight: bold;
+                width: 100px;
+                text-transform: uppercase;
+            }
+
+            #newsContainer {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            @media (max-width: 500px) {
+                #newsContainer {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (min-width: 501px) {
+                #newsContainer {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            @media (min-width: 800px) {
+                #newsContainer {
+                    grid-template-columns: 1fr 1fr 1fr;
+                }
+            }
+
+            @media (min-width: 1200px) {
+                #newsContainer {
+                    grid-template-columns: 1fr 1fr 1fr 1fr;
+                }
+            }
+
+            @media (min-width: 1600px) {
+                #newsContainer {
+                    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+                }
+            }
+
+            .item {
+                background-color: #fefefe;
+                border: 1px solid #efefef;
+                margin: 5px;
+                padding: 10px;
+            }
+
+            .title {
+                font-size: 1.1em;
+                font-weight: bold;
+                color: #333;
+            }
+
+            .photo {
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            .publish, .author, .link {
+                font-size: 0.75em;
+                color: #333;
+                margin-right: 5px;
+            }
+
+            .link {
+                margin: 0 5px;
+            }
+
+            .description {
+                margin: 10px 0;
+                color: #555;
+            }
+
+        </style>
+    </head>
+    
+    <body>
+        <form id="searchForm">
+            <select id="categorySelect" name="categorySelect">
+                <option value="business">Business</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="general" selected>General</option>
+                <option value="health">Health</option>
+                <option value="science">Science</option>
+                <option value="sports">Sports</option>
+                <option value="technology">Technology</option>
+            </select>
+            <select id="countrySelect" name="countrySelect">
+                <option value="au">Australia</option>
+                <option value="cn">China</option>
+                <option value="in">India</option>
+                <option value="gb">United Kingdom</option>
+                <option value="us" selected>United States</option>
+            </select>
+            <input type="text" name="searchBox" id="searchBox" placeholder="Search" />
+            <button>Submit</button>
+            <div id="notification">Cached News</div>
+        </form>
+
+        <div id="newsContainer"></div>
+
+        <script>
+            const notification = document.getElementById('notification');
+            const searchForm = document.getElementById('searchForm');
+
+            searchForm.addEventListener('submit', evt => {
+                
+                evt.preventDefault();
+                let category = evt.target.categorySelect.value;
+                let country = evt.target.countrySelect.value;
+                let keyword = evt.target.searchBox.value
+                
+                let cachedData = validateCache(category, country, keyword.toLowerCase() );
+
+                if(cachedData && cachedData.articles.length > 0) {
+                    notification.innerText = 'Cached Articles';
+                    notification.style.display = 'block';
+                    populate(cachedData.articles);
+                } else {
+                    fetch(`https://newsapi.org/v2/top-headlines?category=${category}&country=${country}&q=${keyword}&apiKey=881b2a671df14037b6a79a56e42d096d`)
+                    .then( resp => resp.json())
+                    .then( data => {
+                        if (data.articles.length) {
+                            notification.style.display = 'none';
+                        } else {
+                            notification.innerText = 'Articles not found';
+                            notification.style.display = 'block';
+                        }
+                        populate(data.articles);
+                        setCache(category, country, keyword.toLowerCase(), data);
+                    });
+                    
+                }
+            });
+
+
+            function validateCache(category, country, keyword) {
+                let stored = JSON.parse( localStorage.getItem(country) );
+                if( stored && stored[category] && stored[category][keyword] ) {
+                    // return cached version if less than 15 minutes
+                    if( ( Math.floor( Date.now() / 1000) - Math.floor(stored[category][keyword].created / 1000) ) / 60 <= 15 ) {
+                        return stored[category][keyword].data;
+                    }
+                }
+
+                return false;
+            }
+
+            function setCache(category, country, keyword, data) {
+                let obj = { 
+                    [category] : {
+                        [keyword]: {
+                            data,
+                            created: Date.now()
+                        }
+                    }
+                }
+
+                localStorage.setItem(country, JSON.stringify(obj));
+            }
+
+            function populate(articles) {
+                const container =  document.getElementById('newsContainer');
+                container.innerHTML = '';
+
+                articles.forEach( news => {
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    
+                    const photo = document.createElement('img');
+                    photo.className = 'photo';
+                    photo.src = news.urlToImage;
+                    item.appendChild(photo);
+
+                    const title = document.createElement('div');
+                    title.className = 'title';
+                    title.appendChild( document.createTextNode(news.title) );
+                    item.appendChild(title);
+
+                    const publish = document.createElement('span');
+                    publish.className = 'publish';
+                    publish.appendChild( document.createTextNode( formatDate(news.publishedAt)) );
+                    item.appendChild(publish);
+
+                    const author = document.createElement('span');
+                    author.className = 'author';
+                    author.appendChild( document.createTextNode(news.author ? news.author : ''));
+                    item.appendChild(author);
+
+                    const description = document.createElement('div');
+                    description.className = 'description';
+                    description.appendChild( document.createTextNode(news.description));
+                    const link = document.createElement('a');
+                    link.className = 'link';
+                    link.setAttribute('href', news.url);
+                    link.setAttribute('target', '_blank')
+                    link.appendChild( document.createTextNode('Read More'));
+                    description.appendChild(link);
+                    item.appendChild(description);
+
+                    container.appendChild(item);
+                });
+            
+            function formatDate(date) {
+                //2020-04-14T02:32:52Z
+                let re = /^([0-9]{4})-([0-9]{2})-([0-9]{2})/g;
+                let arr = re.exec(date);
+                
+                return `${arr[2]}/${arr[3]}/${arr[1]}`;
+            }
+
+
+            }
+
+
+        </script>
+    </body>
+</html>
