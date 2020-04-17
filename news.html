@@ -51,7 +51,7 @@
             }
 
             button {
-                background-color: #2c9848;
+                background-color: #237539;
                 border: 1px solid #1e5a2e;
                 color: #fff;
                 font-weight: bold;
@@ -116,9 +116,18 @@
                 color: #333;
             }
 
-            .photo {
+            .photoWrapper{
                 width: 100%;
-                margin: 5px 0;
+                padding-top: 75%;
+                position: relative;
+                margin: 12.5px 0;
+            }
+            
+            .photo {
+                object-fit: cover;
+                opacity: 0;
+                transition: opacity 0.5s ease-in;
+                margin: 10px 0;
             }
 
             .publish, .author, .link {
@@ -232,10 +241,24 @@
                     const item = document.createElement('div');
                     item.className = 'item';
                     
-                    const photo = document.createElement('img');
-                    photo.className = 'photo';
-                    photo.src = news.urlToImage;
-                    item.appendChild(photo);
+                    const photoWrapper = document.createElement('div');
+                    photoWrapper.className = 'photoWrapper';
+                    item.appendChild(photoWrapper);
+
+                    window.setTimeout( function() {
+                        const photoStyle = window.getComputedStyle(photoWrapper);
+                        
+                        const photo = document.createElement('img');
+                        photo.className = 'photo';
+                        
+                        photo.style.width = photoStyle.getPropertyValue('width');
+                        photo.style.height = photoStyle.getPropertyValue('padding-top');
+                        
+                        photo.setAttribute('data-src', news.urlToImage)
+                        photoWrapper.remove();
+                        item.prepend(photo);
+                        lazyloadImages();
+                    }, 0);
 
                     const title = document.createElement('div');
                     title.className = 'title';
@@ -265,19 +288,37 @@
 
                     container.appendChild(item);
                 });
-            
+            }
+
+            function lazyloadImages() {
+                const images = document.querySelectorAll('[data-src]');
+
+                var cb = function(entries, observer) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const src = entry.target.getAttribute('data-src');
+                            if (!src) { return; }
+                            entry.target.src = src;
+                            entry.target.style.opacity = 1;
+                            observer.unobserve(entry.target);
+                        }
+                    })
+                }
+
+                let observer = new IntersectionObserver(cb, { threshold: 0 })
+
+                images.forEach(image => {
+                    observer.observe(image);
+                });
+            }
+
             function formatDate(date) {
                 //2020-04-14T02:32:52Z
                 let re = /^([0-9]{4})-([0-9]{2})-([0-9]{2})/g;
                 let arr = re.exec(date);
-                
+
                 return `${arr[2]}/${arr[3]}/${arr[1]}`;
             }
-
-
-            }
-
-
         </script>
     </body>
 </html>
